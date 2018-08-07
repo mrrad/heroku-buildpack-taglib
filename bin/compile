@@ -8,6 +8,7 @@ echo "-----> Installing taglib"
 BUILD_DIR=$1
 VENDOR_DIR="vendor"
 DOWNLOAD_URL="http://s3.amazonaws.com/purple-cloud-binaries/heroku/taglib.tar.gz"
+BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
 
 echo "DOWNLOAD_URL = " $DOWNLOAD_URL | indent
 
@@ -16,8 +17,19 @@ mkdir -p $VENDOR_DIR
 cd $VENDOR_DIR
 curl -L --silent $DOWNLOAD_URL | tar xz
 
-echo "exporting PATH and LIBRARY_PATH" | indent
+echo "exporting PATH and LIBRARY_PATH in current session" | indent
 PROFILE_PATH="$BUILD_DIR/.profile.d/taglib.sh"
 mkdir -p $(dirname $PROFILE_PATH)
 echo 'export PATH="$PATH:vendor/taglib/bin"' >> $PROFILE_PATH
 echo 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:vendor/taglib/lib"' >> $PROFILE_PATH
+
+EXISTING_PATH='$PATH'
+NEW_PATH="$EXISTING_PATH:$BUILD_DIR/vendor/taglib/bin"
+echo "export PATH=$NEW_PATH" > $BP_DIR/export
+
+EXISTING_LD_LIBRARY_PATH='$LD_LIBRARY_PATH'
+NEW_LD_LIBRARY_PATH="$EXISTING_LD_LIBRARY_PATH:$BUILD_DIR/vendor/taglib/lib"
+echo "export LD_LIBRARY_PATH=$NEW_LD_LIBRARY_PATH" >> $BP_DIR/export
+
+cat $BP_DIR/export | indent
+
